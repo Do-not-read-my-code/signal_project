@@ -1,0 +1,94 @@
+@startuml
+title Alert Generation System
+
+class AlertGenerator {
+  - dataStorage: DataStorage
+  - alertManager: AlertManager
+  - rules: List<AlertRule>
+  + AlertGenerator(dataStorage: DataStorage, alertManager: AlertManager)
+  + evaluateData(patientId: int): void
+  + addRule(rule: AlertRule): void
+}
+
+class Alert {
+  - patientId: int
+  - condition: String
+  - timestamp: long
+  - priority: AlertPriority
+  + getPatientId(): int
+  + getCondition(): String
+  + getTimestamp(): long
+  + getPriority(): AlertPriority
+}
+
+class AlertManager {
+  - recipients: List<MedicalStaff>
+  + dispatch(alert: Alert): void
+  + registerStaff(staff: MedicalStaff): void
+}
+
+interface AlertRule {
+  + check(patient: Patient): Alert
+}
+
+class BloodPressureRule {
+  - systolicHigh: double
+  - systolicLow: double
+  - diastolicHigh: double
+  - diastolicLow: double
+  + check(patient: Patient): Alert
+}
+
+class OxygenSaturationRule {
+  - minimumSaturation: double
+  + check(patient: Patient): Alert
+}
+
+class ECGRule {
+  - windowSize: int
+  - peakMultiplier: double
+  + check(patient: Patient): Alert
+}
+
+class MedicalStaff {
+  - staffId: int
+  - name: String
+  - role: String
+  + receiveAlert(alert: Alert): void
+}
+
+class Patient {
+  - patientId: int
+  - patientRecords: List<PatientRecord>
+  + getPatientId(): int
+  + getRecords(startTime: long, endTime: long): List<PatientRecord>
+}
+
+class DataStorage {
+  - patientMap: Map<Integer, Patient>
+  + getRecords(patientId: int, startTime: long, endTime: long): List<PatientRecord>
+  + getAllPatients(): List<Patient>
+}
+
+enum AlertPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+AlertGenerator --> DataStorage : reads patient data
+AlertGenerator --> AlertManager : sends alerts
+AlertGenerator o-- "0..*" AlertRule : uses
+AlertRule <|.. BloodPressureRule
+AlertRule <|.. OxygenSaturationRule
+AlertRule <|.. ECGRule
+AlertRule --> Patient : evaluates
+BloodPressureRule --> Alert : creates
+OxygenSaturationRule --> Alert : creates
+ECGRule --> Alert : creates
+AlertManager o-- "0..*" MedicalStaff : routes to
+Alert --> AlertPriority
+DataStorage o-- "0..*" Patient : stores
+
+@enduml

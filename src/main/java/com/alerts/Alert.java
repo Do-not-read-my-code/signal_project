@@ -1,26 +1,28 @@
 package com.alerts;
 
-// Represents an alert
-public class Alert {
-    private String patientId;
-    private String condition;
-    private long timestamp;
+/**
+ * Common alert contract used by factories and decorators.
+ */
+public interface Alert {
 
-    public Alert(String patientId, String condition, long timestamp) {
-        this.patientId = patientId;
-        this.condition = condition;
-        this.timestamp = timestamp;
-    }
+    /**
+     * Gets the patient linked to this alert.
+     *
+     * @return the patient ID as text
+     */
+    String getPatientId();
 
-    public String getPatientId() {
-        return patientId;
-    }
+    /**
+     * Gets the condition that triggered this alert.
+     *
+     * @return the alert condition
+     */
+    String getCondition();
 
-    public String getCondition() {
-        return condition;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
+    /**
+     * Gets the time this alert was created.
+     *
+     * @return the alert timestamp
+     */
+    long getTimestamp();
 }

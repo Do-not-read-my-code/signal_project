@@ -1,0 +1,68 @@
+@startuml
+title Patient Identification System
+
+class PatientIdentifier {
+  - identityManager: IdentityManager
+  - hospitalDatabase: HospitalPatientRepository
+  + identify(incomingData: IncomingPatientData): HospitalPatient
+  + validatePatientId(patientId: int): boolean
+}
+
+class IdentityManager {
+  - mismatchHandler: MismatchHandler
+  + verifyMatch(incomingData: IncomingPatientData, patient: HospitalPatient): boolean
+  + handleMissingMatch(incomingData: IncomingPatientData): void
+}
+
+class HospitalPatient {
+  - hospitalPatientId: int
+  - simulatorPatientId: int
+  - name: String
+  - dateOfBirth: String
+  - medicalHistory: String
+  + getHospitalPatientId(): int
+  + getSimulatorPatientId(): int
+}
+
+class HospitalPatientRepository {
+  - patients: Map<Integer, HospitalPatient>
+  + findBySimulatorId(simulatorPatientId: int): HospitalPatient
+  + updatePatient(patient: HospitalPatient): void
+}
+
+class IncomingPatientData {
+  - patientId: int
+  - recordType: String
+  - value: double
+  - timestamp: long
+  + getPatientId(): int
+  + getRecordType(): String
+}
+
+class MismatchHandler {
+  - anomalyLog: AnomalyLog
+  + handleUnknownPatient(incomingData: IncomingPatientData): void
+  + handleConflictingMatch(incomingData: IncomingPatientData, patient: HospitalPatient): void
+}
+
+class AnomalyLog {
+  - entries: List<String>
+  + log(message: String): void
+  + getEntries(): List<String>
+}
+
+class DataSourceAdapter {
+  - patientIdentifier: PatientIdentifier
+  + receiveData(data: IncomingPatientData): void
+}
+
+PatientIdentifier --> IdentityManager : verifies identity
+PatientIdentifier --> HospitalPatientRepository : searches records
+HospitalPatientRepository o-- "0..*" HospitalPatient : contains
+IdentityManager --> MismatchHandler : delegates problems
+MismatchHandler --> AnomalyLog : records anomalies
+PatientIdentifier --> IncomingPatientData : uses incoming id
+DataSourceAdapter --> PatientIdentifier : requests matching
+DataSourceAdapter --> IncomingPatientData : receives
+
+@enduml

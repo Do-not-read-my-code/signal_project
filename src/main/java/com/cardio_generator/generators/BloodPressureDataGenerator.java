@@ -14,10 +14,10 @@ public class BloodPressureDataGenerator implements PatientDataGenerator {
         lastSystolicValues = new int[patientCount + 1];
         lastDiastolicValues = new int[patientCount + 1];
 
-        // Initialize with baseline values for each patient
+        // initialize with a random baseline per patient
         for (int i = 1; i <= patientCount; i++) {
-            lastSystolicValues[i] = 110 + random.nextInt(20); // Random baseline between 110 and 130
-            lastDiastolicValues[i] = 70 + random.nextInt(15); // Random baseline between 70 and 85
+            lastSystolicValues[i] = 110 + random.nextInt(20); // random baseline between 110 and 130
+            lastDiastolicValues[i] = 70 + random.nextInt(15); // random baseline between 70 and 85
         }
     }
 
@@ -28,19 +28,17 @@ public class BloodPressureDataGenerator implements PatientDataGenerator {
             int diastolicVariation = random.nextInt(5) - 2;
             int newSystolicValue = lastSystolicValues[patientId] + systolicVariation;
             int newDiastolicValue = lastDiastolicValues[patientId] + diastolicVariation;
-            // Ensure the blood pressure stays within a realistic and safe range
+            // keep blood pressure within a realistic and safe range
             newSystolicValue = Math.min(Math.max(newSystolicValue, 90), 180);
             newDiastolicValue = Math.min(Math.max(newDiastolicValue, 60), 120);
             lastSystolicValues[patientId] = newSystolicValue;
             lastDiastolicValues[patientId] = newDiastolicValue;
 
-            outputStrategy.output(patientId, System.currentTimeMillis(), "SystolicPressure",
-                    Double.toString(newSystolicValue));
-            outputStrategy.output(patientId, System.currentTimeMillis(), "DiastolicPressure",
-                    Double.toString(newDiastolicValue));
+            outputStrategy.output(patientId, System.currentTimeMillis(), "SystolicPressure", Double.toString(newSystolicValue));
+            outputStrategy.output(patientId, System.currentTimeMillis(), "DiastolicPressure", Double.toString(newDiastolicValue));
         } catch (Exception e) {
             System.err.println("An error occurred while generating blood pressure data for patient " + patientId);
-            e.printStackTrace(); // This will print the stack trace to help identify where the error occurred.
+            e.printStackTrace(); // print the stack trace to help track down where the error came from
         }
     }
 }

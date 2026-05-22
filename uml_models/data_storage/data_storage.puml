@@ -1,0 +1,84 @@
+@startuml
+title Data Storage System
+
+class DataStorage {
+  - patientMap: Map<Integer, Patient>
+  - accessController: AccessController
+  - retentionPolicy: DataRetentionPolicy
+  + addPatientData(patientId: int, value: double, recordType: String, timestamp: long): void
+  + getRecords(patientId: int, startTime: long, endTime: long, requester: User): List<PatientRecord>
+  + getAllPatients(): List<Patient>
+  + deleteExpiredRecords(): void
+}
+
+class Patient {
+  - patientId: int
+  - patientRecords: List<PatientRecord>
+  + addRecord(value: double, recordType: String, timestamp: long): void
+  + getRecords(startTime: long, endTime: long): List<PatientRecord>
+  + removeRecordsBefore(timestamp: long): void
+}
+
+class PatientRecord {
+  - patientId: int
+  - recordType: String
+  - measurementValue: double
+  - timestamp: long
+  - version: int
+  + getPatientId(): int
+  + getRecordType(): String
+  + getMeasurementValue(): double
+  + getTimestamp(): long
+}
+
+class DataRetriever {
+  - storage: DataStorage
+  + requestPatientRecords(patientId: int, startTime: long, endTime: long, requester: User): List<PatientRecord>
+}
+
+class AccessController {
+  - permissions: Map<Role, Set<Permission>>
+  + canRead(user: User, patientId: int): boolean
+  + canDelete(user: User): boolean
+}
+
+class DataRetentionPolicy {
+  - retentionDays: int
+  + isExpired(record: PatientRecord): boolean
+  + getCutoffTimestamp(): long
+}
+
+class AuditLog {
+  - events: List<String>
+  + logAccess(user: User, patientId: int): void
+  + logDeletion(record: PatientRecord): void
+}
+
+class User {
+  - userId: int
+  - role: Role
+  + getRole(): Role
+}
+
+enum Role {
+  DOCTOR
+  NURSE
+  ADMIN
+}
+
+enum Permission {
+  READ_PATIENT_DATA
+  DELETE_OLD_DATA
+}
+
+DataStorage o-- "0..*" Patient : stores
+Patient *-- "0..*" PatientRecord : owns
+DataRetriever --> DataStorage : queries
+DataStorage --> AccessController : checks access
+DataStorage --> DataRetentionPolicy : applies deletion policy
+DataStorage --> AuditLog : records actions
+AccessController --> User : validates
+User --> Role
+AccessController --> Permission
+
+@enduml

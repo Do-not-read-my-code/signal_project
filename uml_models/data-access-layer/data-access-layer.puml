@@ -1,0 +1,76 @@
+@startuml
+title Data Access Layer
+
+interface DataListener {
+  + start(): void
+  + stop(): void
+  + setAdapter(adapter: DataSourceAdapter): void
+}
+
+class TCPDataListener {
+  - port: int
+  - socket: Socket
+  + start(): void
+  + stop(): void
+}
+
+class WebSocketDataListener {
+  - uri: String
+  - connected: boolean
+  + start(): void
+  + stop(): void
+  + onMessage(message: String): void
+}
+
+class FileDataListener {
+  - directoryPath: String
+  + start(): void
+  + stop(): void
+  + readFiles(): void
+}
+
+class DataParser {
+  + parse(rawMessage: String): PatientRecord
+  + isValid(rawMessage: String): boolean
+}
+
+class DataSourceAdapter {
+  - parser: DataParser
+  - storage: DataStorage
+  + handleRawData(rawMessage: String): void
+  + save(record: PatientRecord): void
+}
+
+class PatientRecord {
+  - patientId: int
+  - measurementValue: double
+  - recordType: String
+  - timestamp: long
+  + getPatientId(): int
+  + getMeasurementValue(): double
+  + getRecordType(): String
+  + getTimestamp(): long
+}
+
+class DataStorage {
+  + addPatientData(patientId: int, value: double, recordType: String, timestamp: long): void
+}
+
+class ErrorHandler {
+  + handleInvalidFormat(rawMessage: String): void
+  + handleConnectionLoss(sourceName: String): void
+}
+
+DataListener <|.. TCPDataListener
+DataListener <|.. WebSocketDataListener
+DataListener <|.. FileDataListener
+DataListener --> DataSourceAdapter : forwards raw data
+DataSourceAdapter --> DataParser : parses
+DataSourceAdapter --> DataStorage : stores parsed data
+DataParser --> PatientRecord : creates
+DataSourceAdapter --> ErrorHandler : reports problems
+TCPDataListener --> ErrorHandler : connection errors
+WebSocketDataListener --> ErrorHandler : stream errors
+FileDataListener --> ErrorHandler : file errors
+
+@enduml
